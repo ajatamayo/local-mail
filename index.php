@@ -97,7 +97,7 @@ class Local_Mail {
 		printf( '%s email%s %s',
 			$count,
 			1 == $count ? '' : 's',
-			' [ <strong><a href="?clear_all=true" onclick="return confirm(\'Are you sure?\');">CLEAR ALL</a></strong> ]'
+			' [ <strong><a href="?clear_all=true" onclick="return 1;">CLEAR ALL</a></strong> ]'
 		);
 		
 		echo "</p>\n";
