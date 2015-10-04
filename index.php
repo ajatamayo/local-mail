@@ -25,7 +25,7 @@ class Local_Mail {
 	
 	/* To infinity and beyond */
 	function init() {
-		$this->mail = isset( $_GET['mail'] ) ? $_GET['mail'] : '/var/mail/austinpassy';
+		$this->mail = isset( $_GET['mail'] ) ? $_GET['mail'] : '/var/mail/ariel';
 		$this->session();
 	}
 	
