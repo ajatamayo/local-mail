@@ -78,8 +78,32 @@ class Local_Mail {
         }
 
         if ( $fileCleared ) {
-            echo '<p><em>Cleared.</em></p>';
+            ?>
+            <div class="chip">Cleared<i class="material-icons">done_all</i></div>
+            <?php
             return;
+        }
+
+        $count = $this->email_count();
+
+        if ( 0 == $count ) {
+            return;
+        }
+
+        $mbox = new Mail_Mbox( $this->mail );
+        $mbox->open();
+        $this->email_list( $mbox );
+        $mbox->close();
+    }
+
+    function email_count() {
+        /** CLASSES **/
+        if ( !class_exists( 'PEAR' ) ) {
+            require_once ( 'classes/PEAR-1.9.5/PEAR.php' );
+        }
+
+        if ( !class_exists( 'Mail_Mbox' ) ) {
+            require_once ( 'classes/Mail/Mbox.php' );
         }
 
         //reads a mbox file
@@ -87,111 +111,47 @@ class Local_Mail {
         $mbox->open();
         $count  = $mbox->size();
 
-        if ( 0 == $count ) {
-            echo '<p>#EmailZero!</p>';
-            return;
-        }
-
-        echo "<p style='border-bottom:1px solid #efefef; padding-bottom:8px'>\n";
-
-        printf( '%s email%s %s',
-            $count,
-            1 == $count ? '' : 's',
-            ' [ <strong><a href="?clear_all=true" onclick="return 1;">CLEAR ALL</a></strong> ]'
-        );
-
-        echo "</p>\n";
-
-        echo "<div style='height:100%;overflow-y:scroll;padding:0;background-color:#faf9f7;border:1px solid #ccc;'>\n";
-
-        for ( $n = 0; $n < $count; $n++ ) {
-            $message    = $mbox->get( $n );
-            preg_match( '/Subject: (.*)$/m', $message, $matches );
-            $subject    = $matches[1];
-            $style      = ( $n % 2 === 0 ) ? 'background-color:#efefef;' : 'background-color:#f9f9f9;';
-            $num        = $n + 1;
-
-            echo "<div style='border-top:1px solid #DEDEDE;padding:10px 20px;$style'>";
-            echo "<strong>Mail #$num: $subject</strong>\n";
-            echo "<pre>$message</pre>\n";
-            echo "</div>\n";
-        }
-
-        $mbox->close();
-
-        echo "</div>\n";
+        return $count;
     }
 
-    /** HTML */
-    function output() {
-        $fileCleared = false;
-
-        // Clear file?
-        if ( $this->is_cleared() ) {
-            $handle = fopen( $this->mail, "w" );
-            fclose( $handle );
-            $fileCleared = true;
-        }
-
-        // Read file
-        if ( file_exists( $this->mail ) ) {
-            $email = file_get_contents( $this->mail ); // String
-
-            if ( $fileCleared )
-                echo '<p><em>Cleared.</em></p>';
-
-            if ( $email ) {
-                echo '<p style="border-bottom:1px solid #efefef; padding-bottom:8px">';
-
-                if ( is_array( $email) ) {
-                    echo count( $email ) . ' email(s)';
-                }
-                else {
-                    preg_match_all( '/(-{2}[a-z0-9]{11}[.])/i', $email, $matches );
-                    echo count( $matches[0] ) . ' email(s)';
-                }
-
-                echo ' [ <strong><a href="?clear_all=true" onclick="return confirm(\'Are you sure?\');">CLEAR ALL</a></strong> ]';
-                echo '</p>' . "\n";
-
-                echo '<div style="height:100%;overflow:scroll;padding:0;background-color:#faf9f7;border:1px solid #ccc;">' . "\n";
-
-                if ( is_array( $email ) ) {
-                    $counter = 0;
-                    foreach ( $email as $key => $mail ) : $counter++;
-                        $style = ( $counter % 2 === 0 ) ? 'background-color:#efefef;' : 'background-color:#f9f9f9;';
-                        $mail  = htmlspecialchars( $mail );
-                        echo "<pre style='$style'>$mail</pre>\n";
-                    endforeach;
-                }
-                else {
-
-                    $email = htmlspecialchars( $email );
-
-                    $array = preg_split( '/(-{2}[a-z0-9]{11}[.])/i', $email );
-
-                    $counter = 0;
-                    foreach ( $array as $key => $mail ) : $counter++;
-                        $style = ( $counter % 2 === 0 ) ? 'background-color:#efefef;' : 'background-color:#f9f9f9;';
-
-                        echo "<pre style='border-top:1px solid #DEDEDE;padding:10px 20px;$style'>\n";
-                            echo $mail;
-                        echo "</pre>\n";
-                    endforeach;
-                }
-
-                echo '</div>';
-            }
-            else {
-                echo '<p>#EmailZero!</p>';
-            }
-        }
-        else {
-            echo '<p><em>There was a problem reading the file.</em></p>';
-            var_dump( $this->mail );
+    function email_count_display() {
+        $count = $this->email_count();
+        if ( $count > 1 ) {
+            echo $count . ' emails';
+        } elseif ( $count == 1 ) {
+            echo $count . ' email';
+        } else {
+            echo 'No emails!';
         }
     }
 
+    function email_list( $mbox ) {
+        $count = $this->email_count();
+        ?>
+        <ul class="collapsible" data-collapsible="expandable">
+            <?php for ( $n = 0; $n < $count; $n++ ) : ?>
+                <?php
+                    $message    = $mbox->get( $n );
+                    preg_match( '/Subject: (.*)$/m', $message, $matches );
+                    $subject    = $matches[1];
+                    $num        = $n + 1;
+
+                    $split_at = strpos( $message, 'Content-Transfer-Encoding: 8bit' );
+                    $split_at += strlen( 'Content-Transfer-Encoding: 8bit' );
+                    $headers = substr( $message, 0, $split_at );
+                    $body = substr( $message, $split_at );
+                ?>
+                <li>
+                    <div class="collapsible-header"><i class="material-icons">email</i><?php printf( 'Mail #%d: %s', $num, $subject ); ?></div>
+                    <div class="collapsible-body">
+                        <div class="email-body"><?php echo $body; ?></div>
+                        <pre class="grey-text"><?php echo htmlspecialchars( $headers ); ?></pre>
+                    </div>
+                </li>
+            <?php endfor; ?>
+        </ul>
+        <?php
+    }
 }
 
 function LOCAL_MAIL() {

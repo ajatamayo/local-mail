@@ -12,3 +12,8 @@
 .icon-block .material-icons {
 	font-size: inherit;
 }
+
+pre, .email-body {
+    margin: 10px 15px;
+    font-size: 0.8em;
+}
