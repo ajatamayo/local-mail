@@ -8,6 +8,9 @@ View your local mail from '/var/mail/<user-name>/'
 
 ## Changelog ##
 
+0.4
+Material Design
+
 0.3
 Use Mbox class to parse email.
 Include PEAR.
