@@ -115,6 +115,10 @@ class Local_Mail {
     }
 
     function email_count_display() {
+        if ( $this->is_cleared() ) {
+            echo 'No emails!';
+            return;
+        }
         $count = $this->email_count();
         if ( $count > 1 ) {
             echo $count . ' emails';
