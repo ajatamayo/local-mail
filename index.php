@@ -55,7 +55,7 @@ LOCAL_MAIL();
     </div>
   </div>
 
-  <footer class="page-footer orange">
+  <footer class="page-footer orange sticky-footer">
     <div class="container">
       <div class="row">
         <div class="col l6 s12">

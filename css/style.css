@@ -17,3 +17,15 @@ pre, .email-body {
     margin: 10px 15px;
     font-size: 0.8em;
 }
+
+body {
+    position: relative;
+    padding-bottom: 150px;
+    min-height: 100vh;
+}
+
+.sticky-footer {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+}
